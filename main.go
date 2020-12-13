@@ -1,16 +1,21 @@
 package main
 
 import (
-	"time"
 	"fmt"
+	"sync"
 )
 
 func main() {
-	//  無名関数(クロージャ)
-	go func() {
-		time.Sleep(3*time.Second)
-		fmt.Println("実行終了！")
-	} ()
-	fmt.Println("実行開始")
-	time.Sleep(10*time.Second)
+	wg := &sync.WaitGroup{}
+
+	for i:=0; i<10; i++ {
+		wg.Add(1) //wgをインクリメント　GoRoutineを動かす前にするのが大事
+		go func(i int) {
+			fmt.Println(i)
+			wg.Done() //wgをデクリメント
+		}(i)
+	}
+
+	wg.Wait() // wgがゼロになるまで待つ
 }
+
