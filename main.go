@@ -2,20 +2,27 @@ package main
 
 import (
 	"fmt"
-	"sync"
+	"database/sql"
+	_"github.com/go-sql-driver/mysql"
 )
 
-func main() {
-	wg := &sync.WaitGroup{}
+const DRIVER = "mysql"
+const DSN = "golang-test-user:golang-test-pass@tcp(mysql-container:3306)/golang-test-database"
 
-	for i:=0; i<10; i++ {
-		wg.Add(1) //wgをインクリメント　GoRoutineを動かす前にするのが大事
-		go func(i int) {
-			fmt.Println(i)
-			wg.Done() //wgをデクリメント
-		}(i)
+func main() {
+	db, err:= sql.Open(DRIVER, DSN)
+	if err != nil {
+		fmt.Println("Openエラー")
+	} else {
+		fmt.Println("OpenOK!")
 	}
 
-	wg.Wait() // wgがゼロになるまで待つ
-}
+	err = db.Ping()
+	if err != nil {
+		fmt.Println("接続失敗！")
+	} else {
+		fmt.Println("接続OK!")
+	}
 
+	db.Close()
+}
