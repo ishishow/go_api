@@ -1,0 +1,9 @@
+{
+    "host": "mysql-container",
+    "port": 3306,
+    "db-name": "golang-test-database",
+    "charset": "utf8",
+    "user": "golang-test-user",
+    "pass": "golang-test-pass"
+
+}
