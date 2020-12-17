@@ -1,14 +1,12 @@
-package user // 独自のクエリパッケージ
+package handler // 独自のクエリパッケージ
 
 import (
 	"database/sql"
 	_ "github.com/go-sql-driver/mysql"
 	"fmt"
 	"net/http"
-	"io"
-	"bytes"
-	"encoding/json"
-	"github.com/google/uuid"
+	"../service"
+	_"../model"
 )
 
 
@@ -27,12 +25,12 @@ func Create(w http.ResponseWriter, r *http.Request, db *sql.DB) (id int64, err e
 		case "POST":
 			var user User
 
-			user.Name, err = GainUserName(r)
+			user.Name, err = service.GainUserName(r)
 			if err != nil {
 				return 0, err
 			}
 
-			user.Token, err = CreateUuid()
+			user.Token, err = service.CreateUuid()
 			if err != nil {
 				return 0, err
 			}
@@ -56,7 +54,7 @@ func Create(w http.ResponseWriter, r *http.Request, db *sql.DB) (id int64, err e
 func Get(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	switch r.Method {
 	case "GET":
-		user, err := AuthUser(r.Header.Get("x-token"), db)
+		user, err := service.AuthUser(r.Header.Get("x-token"), db)
 		if err != nil {
 			return
 		}
@@ -70,7 +68,7 @@ func Update(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	switch r.Method {
 		case "PUT":
 
-			name, err := GainUserName(r)
+			name, err := service.GainUserName(r)
 			if err != nil {
 				return
 			}
@@ -90,44 +88,3 @@ func Update(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	return
 }
 
-func CreateUuid()(token string, err error){
-	u, err := uuid.NewRandom()
-	if err != nil {
-			fmt.Println(err)
-			return
-	}
-	uu := u.String()
-	return uu, err
-}
-
-func AuthUser(token string, db *sql.DB)(user User, err error){
-	err = db.QueryRow("SELECT name FROM users WHERE token = ?", token).Scan(&user.Name)
-	switch {
-		case err == sql.ErrNoRows:
-			fmt.Println("レコードが存在しません")
-			return user, err
-		case err != nil:
-			panic(err.Error())
-			return user, err
-		default:
-			fmt.Println(user.Name)
-		return user, nil
-	}
-}
-
-func GainUserName(r *http.Request)(name string, err error){
-	var user User
-	body := r.Body
-	defer body.Close()
-	buf := new(bytes.Buffer)
-	io.Copy(buf, body)
-
-	// byte配列にしたbody内のjsonをgoで扱えるようにobjectに変換
-	err = json.Unmarshal(buf.Bytes(), &user)
-	if err != nil {
-		fmt.Println("error 1")
-		return "", err
-	}
-	fmt.Println(user.Name)
-	return user.Name, nil
-}
