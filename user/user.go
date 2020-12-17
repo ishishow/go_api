@@ -1,8 +1,14 @@
-package query // 独自のクエリパッケージ
+package user // 独自のクエリパッケージ
 
 import (
 	"database/sql"
 	_ "github.com/go-sql-driver/mysql"
+	"fmt"
+	"net/http"
+	"io"
+	"bytes"
+	"encoding/json"
+	"github.com/google/uuid"
 )
 
 
@@ -15,6 +21,93 @@ type Users struct {
 	Created string `db:"created_at"` //ID
 	Updated string `db:"updated_at"` //ID
 }
+
+// type UserName struct {
+// 	Name string `json:"name"`
+// }
+
+func Create(w http.ResponseWriter, r *http.Request, db *sql.DB) (id int64, err error){
+		switch r.Method {
+			case "POST":
+				body := r.Body
+				defer body.Close()
+				buf := new(bytes.Buffer)
+				io.Copy(buf, body)
+				// byte配列にしたbody内のjsonをgoで扱えるようにobjectに変換
+				user :=new(Users)
+				err := json.Unmarshal(buf.Bytes(), user.Name)
+				if err != nil {
+					fmt.Println("error 1")
+				}
+				fmt.Println(user.Name)
+
+				stmt, err := db.Prepare("INSERT INTO users(name, token, created_at, updated_at) VALUES(?, ?, now(), now())")
+				if err != nil {
+					fmt.Println("error 2")
+					return 0, err
+				}
+				defer stmt.Close()
+
+				//クエリ実行
+				token, err := CreateUuid()
+				if err != nil {
+					fmt.Println("error 3")
+					return 0, err
+				}
+				_, err = stmt.Exec(user.Name, token)
+				if err != nil {
+					fmt.Println("error 4")
+					return 0, err
+				}
+				fmt.Println("ok")
+				fmt.Println(token)
+		}
+		return 0, nil
+}
+
+func CreateUuid()(token string, err error){
+	u, err := uuid.NewRandom()
+	if err != nil {
+			fmt.Println(err)
+			return
+	}
+	uu := u.String()
+	return uu, err
+}
+
+func Get(w http.ResponseWriter, r *http.Request, db *sql.DB) {
+	// プリペアードステートメント
+	switch r.Method {
+	case "GET":
+		//リクエストheaderを受け取る
+		header := r.Header
+		user :=new(Users)
+		err = db.QueryRow("SELECT name FROM users WHERE token = ?", header.Get("x-token")).Scan(user.Name)
+		switch {
+		case err == sql.ErrNoRows:
+			fmt.Println("レコードが存在しません")
+		case err != nil:
+			panic(err.Error())
+		default:
+			fmt.Println(user.ID, user.Name)
+		}
+	}
+	return
+}
+
+func Update(w http.ResponseWriter, r *http.Request, db *sql.DB) {
+	// プリペアードステートメント
+	switch r.Method {
+	case "PUT":
+		r.ParseForm()
+		// Formデータを取得.
+		form := r.PostForm
+		fmt.Fprintf(w, "フォーム：\n%v\n", form)
+		fmt.Println("test")
+	}
+	return
+}
+
 
 // データ登録関数
 func InsertUser(name, token string, db *sql.DB)(id int64, err error) {
