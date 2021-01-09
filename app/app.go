@@ -1,15 +1,14 @@
-package main
+package app
 
 import (
 	"fmt"
 	"net/http"
 
-	"./db"      //実装した設定パッケージの読み込み
-	"./handler" //実装したクエリパッケージの読み込み
-	//実装したクエリパッケージの読み込み
+	"../db"      //実装した設定パッケージの読み込み
+	"../handler" //実装したクエリパッケージの読み込み
 )
 
-func main() {
+func a() {
 
 	db, err := db.ConnectDB()
 	if err != nil {
@@ -37,12 +36,12 @@ func main() {
 		handler.UpdateUser(w, r, db)
 	})
 
-	http.HandleFunc("/gacha/draw", func(w http.ResponseWriter, r *http.Request) {
-		handler.GachaDraw(w, r, db)
+	http.HandleFunc("/user/update", func(w http.ResponseWriter, r *http.Request) {
+		handler.UpdateUser(w, r, db)
 	})
 
-	http.HandleFunc("/character/list", func(w http.ResponseWriter, r *http.Request) {
-		handler.GetUserCharacterAll(w, r, db)
+	http.HandleFunc("/user/update", func(w http.ResponseWriter, r *http.Request) {
+		handler.UpdateUser(w, r, db)
 	})
 
 	http.ListenAndServe(":8080", nil)

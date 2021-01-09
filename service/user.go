@@ -1,51 +1,52 @@
 package service
 
 import (
+	"bytes"
 	"database/sql"
-	_ "github.com/go-sql-driver/mysql"
+	"encoding/json"
 	"fmt"
 	"io"
-	"bytes"
 	"net/http"
-	"encoding/json"
+
+	_ "../model"
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/google/uuid"
-	_"../model"
 )
 
 type User struct {
-	Id int `db:"ID"` //ID
-	Name string `db:"name"` //ID
-	Token string `db:"token"` //ID
+	Id      int    `db:"ID"`         //ID
+	Name    string `db:"name"`       //ID
+	Token   string `db:"token"`      //ID
 	Created string `db:"created_at"` //ID
 	Updated string `db:"updated_at"` //ID
 }
 
-func CreateUuid()(token string, err error){
+func CreateUuid() (token string, err error) {
 	u, err := uuid.NewRandom()
 	if err != nil {
-			fmt.Println(err)
-			return
+		fmt.Println(err)
+		return
 	}
 	uu := u.String()
 	return uu, err
 }
 
-func AuthUser(token string, db *sql.DB)(user User, err error){
+func AuthUser(token string, db *sql.DB) (user User, err error) {
 	err = db.QueryRow("SELECT name FROM users WHERE token = ?", token).Scan(&user.Name)
 	switch {
-		case err == sql.ErrNoRows:
-			fmt.Println("レコードが存在しません")
-			return user, err
-		case err != nil:
-			panic(err.Error())
-			return user, err
-		default:
-			fmt.Println(user.Name)
+	case err == sql.ErrNoRows:
+		fmt.Println("レコードが存在しません")
+		return user, err
+	case err != nil:
+		panic(err.Error())
+		return user, err
+	default:
+		fmt.Println(user.Name)
 		return user, nil
 	}
 }
 
-func GainUserName(r *http.Request)(name string, err error){
+func GainUserName(r *http.Request) (name string, err error) {
 	var user User
 	body := r.Body
 	defer body.Close()
