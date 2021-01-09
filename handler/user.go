@@ -20,7 +20,7 @@ type User struct {
 	Updated string `db:"updated_at"` //ID
 }
 
-func Create(w http.ResponseWriter, r *http.Request, db *sql.DB) (id int64, err error){
+func CreateUser(w http.ResponseWriter, r *http.Request, db *sql.DB) (id int64, err error){
 	switch r.Method {
 		case "POST":
 			var user User
@@ -51,7 +51,7 @@ func Create(w http.ResponseWriter, r *http.Request, db *sql.DB) (id int64, err e
 }
 
 
-func Get(w http.ResponseWriter, r *http.Request, db *sql.DB) {
+func GetUser(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	switch r.Method {
 	case "GET":
 		user, err := service.AuthUser(r.Header.Get("x-token"), db)
@@ -63,7 +63,7 @@ func Get(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	return
 }
 
-func Update(w http.ResponseWriter, r *http.Request, db *sql.DB) {
+func UpdateUser(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	// プリペアードステートメント
 	switch r.Method {
 		case "PUT":
