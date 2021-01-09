@@ -21,30 +21,10 @@ func GachaDraw(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 			return
 		}
 
-		user.Name, err = service.GainUserName(r)
-		if err != nil {
-			return 0, err
-		}
-
-		user.Token, err = service.CreateUuid()
-		if err != nil {
-			return 0, err
-		}
-
-		stmt, err := db.Prepare("INSERT INTO users(name, token, created_at, updated_at) VALUES(?, ?, now(), now())")
-		if err != nil {
-			return 0, err
-		}
-		defer stmt.Close()
-
-		//クエリ実行
-		_, err = stmt.Exec(user.Name, user.Token)
-		if err != nil {
-			return 0, err
-		}
+		err = service.GachaPlay(user, r.Header.Get("times"), db)
 
 	}
-	return 0, nil
+	return
 }
 
 func GetUserCharacterAll(w http.ResponseWriter, r *http.Request, db *sql.DB) (id int64, err error) {

@@ -8,30 +8,11 @@ import (
 	"io"
 	"net/http"
 
-	_ "../model"
+	"../model"
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/google/uuid"
 )
 
-type User struct {
-	Id      int    `db:"ID"`         //ID
-	Name    string `db:"name"`       //ID
-	Token   string `db:"token"`      //ID
-	Created string `db:"created_at"` //ID
-	Updated string `db:"updated_at"` //ID
-}
-
-func CreateUuid() (token string, err error) {
-	u, err := uuid.NewRandom()
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	uu := u.String()
-	return uu, err
-}
-
-func AuthUser(token string, db *sql.DB) (user User, err error) {
+func AuthUser(token string, db *sql.DB) (user model.User, err error) {
 	err = db.QueryRow("SELECT name FROM users WHERE token = ?", token).Scan(&user.Name)
 	switch {
 	case err == sql.ErrNoRows:
@@ -47,7 +28,7 @@ func AuthUser(token string, db *sql.DB) (user User, err error) {
 }
 
 func GainUserName(r *http.Request) (name string, err error) {
-	var user User
+	var user model.User
 	body := r.Body
 	defer body.Close()
 	buf := new(bytes.Buffer)
