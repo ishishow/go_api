@@ -21,7 +21,10 @@ func GachaDraw(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 			return
 		}
 
-		err = service.GachaPlay(user, r.Header.Get("times"), db)
+		character_ids, err := service.GachaPlay(user, r.Header.Get("times"), db)
+		if err != nil {
+			return
+		}
 
 	}
 	return

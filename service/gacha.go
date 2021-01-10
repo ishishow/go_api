@@ -11,23 +11,18 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
-func GachaPlay(user model.User, str_times string, db *sql.DB) (err error) {
+func GachaPlay(user model.User, str_times string, db *sql.DB) (character_ids []int, err error) {
 
 	times, err := strconv.Atoi(str_times)
-	characters, err := EmitCharacters(times, db)
-
-	err = db.QueryRow("SELECT name FROM users WHERE token = ?", token).Scan(&user.Name)
-	switch {
-	case err == sql.ErrNoRows:
-		fmt.Println("レコードが存在しません")
-		return err
-	case err != nil:
-		panic(err.Error())
-		return err
-	default:
-		fmt.Println(user.Name)
-		return nil
+	if err != nil {
+		return nil, err
 	}
+	character_ids, err = EmitCharacters(times, db)
+	if err != nil {
+		return character_ids, err
+	}
+
+	return character_ids, nil
 }
 
 func EmitCharacters(times int, db *sql.DB) (character_ids []int, err error) {
@@ -41,7 +36,7 @@ func EmitCharacters(times int, db *sql.DB) (character_ids []int, err error) {
 		if err != nil {
 			return character_ids, err
 		}
-		character_ids.append(emitedCharacterID)
+		character_ids = append(character_ids, emitedCharacterID)
 	}
 	return character_ids, nil
 }
@@ -75,7 +70,27 @@ func SumWeight(db *sql.DB) (total_entries []model.GachaEntries, sumWeight int, e
 			return nil, sumWeight, err
 		}
 		sumWeight += entry.Weight
+		total_entries = append(total_entries, entry)
 	}
 
-	return m, sumWeight, nil
+	return total_entries, sumWeight, nil
+}
+
+func UserCharacterCreate(userID int, character_ids []int)(err error){
+
+	for _, character_id := range character_ids{
+
+		stmt, err := db.Prepare("INSERT INTO user_characters(user_id, character_id, created_at, updated_at) VALUES(?, ?, now(), now())")
+		if err != nil {
+			return 0, err
+		}
+		defer stmt.Close()
+
+		//クエリ実行
+		_, err = stmt.Exec(userID, character_id)
+		if err != nil {
+			return 0, err
+		}
+	}
+
 }
