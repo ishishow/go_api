@@ -13,10 +13,8 @@ import (
 
 func GachaPlay(user model.User, str_times string, db *sql.DB) (err error) {
 
-	//
-	sumWeight, err := SumWeight(db)
 	times, err := strconv.Atoi(str_times)
-	characters, err := EmitCharacters(times, sumWeight, db)
+	characters, err := EmitCharacters(times, db)
 
 	err = db.QueryRow("SELECT name FROM users WHERE token = ?", token).Scan(&user.Name)
 	switch {
@@ -32,15 +30,37 @@ func GachaPlay(user model.User, str_times string, db *sql.DB) (err error) {
 	}
 }
 
-func EmitCharacters(times int, sumWeight int, db *sql.DB) (characters_id []int, err error) {
+func EmitCharacters(times int, db *sql.DB) (character_ids []int, err error) {
+	entries, sumWeight, err := SumWeight(db)
+	if err != nil {
+		return character_ids, err
+	}
 
+	for i, _ := range times {
+		emitedCharacterID, err := EmitCharacter(entries, sumWeight)
+		if err != nil {
+			return character_ids, err
+		}
+		character_ids.append(emitedCharacterID)
+	}
+	return character_ids, nil
+}
+
+func EmitCharacter(entries []model.GachaEntries, sumWeight int) (emitCharacterID int, err error {
 	rand.Seed(time.Now().UnixNano())
 	emitVal := rand.Intn(sumWeight)
 
-	return characters_id, nil
+	for _, entry := range entries {
+		emitVal -= entry.Weight
+		if emitVal <= 0 {
+			emitCharacterID = entry.CharacterID
+			return emitCharacterID, nil
+		}
+	}
+	return 0, err
 }
 
-func SumWeight(db *sql.DB) (sumWeight int, err error) {
+func SumWeight(db *sql.DB) (total_entries []model.GachaEntries, sumWeight int, err error) {
 	sumWeight = 0
 
 	rows, err := db.Query("SELECT weight FROM gacha_entries WHERE gacha_id = ?", 1)
@@ -49,13 +69,13 @@ func SumWeight(db *sql.DB) (sumWeight int, err error) {
 	}
 
 	for rows.Next() {
-		m := model.GachaEntries{}
-		err = rows.Scan(&m.Weight)
+		entry := model.GachaEntries{}
+		err = rows.Scan(&entry.ID, &entry.Weight, &entry.CharacterID)
 		if err != nil {
-			return sumWeight, err
+			return nil, sumWeight, err
 		}
-		sumWeight += m.Weight
+		sumWeight += entry.Weight
 	}
 
-	return sumWeight, nil
+	return m, sumWeight, nil
 }
