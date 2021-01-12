@@ -11,34 +11,39 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
-func GachaPlay(user model.User, str_times string, db *sql.DB) (character_ids []int, err error) {
+func GachaPlay(user model.User, str_times string, db *sql.DB) (gacha_draw_result model.GachaDrawRequest, err error) {
 
 	times, err := strconv.Atoi(str_times)
 	if err != nil {
 		return nil, err
 	}
-	character_ids, err = EmitCharacters(times, db)
+	gacha_draw_result, err = EmitCharacters(times, db)
 	if err != nil {
-		return character_ids, err
+		return gacha_draw_result, err
 	}
 
-	return character_ids, nil
+	return gacha_draw_result, nil
 }
 
-func EmitCharacters(times int, db *sql.DB) (character_ids []int, err error) {
+func EmitCharacters(times int, db *sql.DB) (gacha_draw_result model.GachaDrawRequest, err error) {
 	entries, sumWeight, err := SumWeight(db)
 	if err != nil {
-		return character_ids, err
+		return nil, err
 	}
+	var gacha_result GachaResult
 
 	for i, _ := range times {
-		emitedCharacterID, err := EmitCharacter(entries, sumWeight)
+		gacha_result.CharacterID, err = EmitCharacter(entries, sumWeight)
 		if err != nil {
-			return character_ids, err
+			return gacha_draw_result, err
 		}
-		character_ids = append(character_ids, emitedCharacterID)
+
+		gacha_result.Name, err = GetCharacterName(emitedCharacterID, db)
+
+
+		gacha_draw_result = append(gacha_draw_result, gacha_result)
 	}
-	return character_ids, nil
+	return gacha_draw_result, nil
 }
 
 func EmitCharacter(entries []model.GachaEntries, sumWeight int) (emitCharacterID int, err error {

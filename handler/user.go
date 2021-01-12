@@ -50,6 +50,7 @@ func GetUser(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 			return
 		}
 		fmt.Println(user.Name)
+		service.RespondJSON(w, 200, user)
 	}
 	return
 }

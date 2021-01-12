@@ -15,17 +15,15 @@ func GachaDraw(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	switch r.Method {
 	case "POST":
 		var user model.User
-
 		user, err := service.AuthUser(r.Header.Get("x-token"), db)
 		if err != nil {
 			return
 		}
-
-		character_ids, err := service.GachaPlay(user, r.Header.Get("times"), db)
+		gacha_draw_result, err := service.GachaPlay(user, r.Header.Get("times"), db)
 		if err != nil {
 			return
 		}
-
+		service.RespondJSON(w, 200, gacha_draw_result)
 	}
 	return
 }
