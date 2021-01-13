@@ -41,8 +41,13 @@ func EmitCharacters(times int, db *sql.DB) (gacha_draw_result GachaDrawRequest, 
 }
 
 func EmitCharacter(entries []model.GachaEntries, sumWeight int) (emitCharacterID int, err error) {
-	rand.Seed(time.Now().UnixNano())
-	emitVal := rand.Intn(sumWeight)
+	my_rand := rand.New(rand.NewSource(1))
+	my_rand.Seed(time.Now().UnixNano())
+	emitVal := my_rand.Intn(sumWeight)
+	fmt.Println(my_rand.Intn(sumWeight))
+	fmt.Println(my_rand.Intn(sumWeight))
+	fmt.Println(my_rand.Intn(sumWeight))
+	fmt.Println(my_rand.Intn(sumWeight))
 
 	for _, entry := range entries {
 		emitVal -= entry.Weight
@@ -57,7 +62,7 @@ func EmitCharacter(entries []model.GachaEntries, sumWeight int) (emitCharacterID
 func SumWeight(db *sql.DB) (total_entries []model.GachaEntries, sumWeight int, err error) {
 	sumWeight = 0
 
-	rows, err := db.Query("SELECT weight FROM gacha_entries WHERE gacha_id = ?", 1)
+	rows, err := db.Query("SELECT id, weight, character_id FROM gacha_entries WHERE gacha_id = ?", 1)
 	if err != nil {
 		return total_entries, sumWeight, err
 	}
