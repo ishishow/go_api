@@ -6,12 +6,12 @@ import (
 )
 
 type GachaDrawRequest struct {
-	results []GachaResult
+	Results []GachaResult `json:"results"`
 }
 
 type GachaResult struct {
-	CharacterID int
-	Name        string
+	CharacterID int    `json:"character_id"`
+	Name        string `json:"name"`
 }
 
 func RespondJSON(w http.ResponseWriter, status int, payload interface{}) {

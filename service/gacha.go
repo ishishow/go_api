@@ -35,7 +35,7 @@ func EmitCharacters(times int, db *sql.DB) (gacha_draw_result GachaDrawRequest, 
 
 		gacha_result.Name, err = GetCharacterName(gacha_result.CharacterID, db)
 
-		gacha_draw_result.results = append(gacha_draw_result.results, gacha_result)
+		gacha_draw_result.Results = append(gacha_draw_result.Results, gacha_result)
 	}
 	return gacha_draw_result, nil
 }
