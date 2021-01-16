@@ -1,3 +1,4 @@
 pkg/*
 bin/*
 __debug_bin/*
+delve

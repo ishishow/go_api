@@ -35,5 +35,18 @@ func GetCharacterName(character_id int, db *sql.DB) (name string, err error) {
 
 func GerUserCharacters(user_id int, db *sql.DB) (list_user_character ListUserCharacterResponse, err error) {
 
-	rows, err := db.Query("SELECT  ")
+	rows, err := db.Query("SELECT id FROM user_characters WHERE user_id = ?", user_id)
+	rows, err := db.Query("SELECT t1.user_character_id, t2.id, t2.name from user_characters AS t1 INNER JOIN characters AS t2 ON t1.character_id = t2.id AND t1.user_id = ?", user_id)
+	if err != nil {
+		return list_user_character, err
+	}
+
+	for rows.Next() {
+		var usercharacter model.UserCharacter
+		err = rows.Scan(&usercharacter.ID)
+		if err != nil {
+			return list_user_character, err
+		}
+	}
+
 }
