@@ -56,9 +56,13 @@ func GetUserCharacterAll(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 		if err != nil {
 			return
 		}
-		fmt.Println(user)
+		list_user_character, err := service.GetUserCharacters(user.ID, db)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
 
-		service.
+		service.RespondJSON(w, 200, list_user_character)
 	}
 	return
 }

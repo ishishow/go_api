@@ -16,8 +16,32 @@ func GachaPlay(user model.User, times int, db *sql.DB) (gacha_draw_result GachaD
 	if err != nil {
 		return gacha_draw_result, err
 	}
-	fmt.Println(gacha_draw_result)
+	err = SaveUserCharacter(user, gacha_draw_result, db)
+	if err != nil {
+		fmt.Println(err)
+		return gacha_draw_result, err
+	}
 	return gacha_draw_result, nil
+}
+
+func SaveUserCharacter(user model.User, gacha_draw_result GachaDrawRequest, db *sql.DB) (err error) {
+
+	for _, result := range gacha_draw_result.Results {
+
+		stmt, err := db.Prepare("INSERT INTO user_characters(character_id, user_id, created_at, updated_at) VALUES(?, ?, now(), now())")
+		if err != nil {
+			fmt.Println(err)
+			return err
+		}
+		defer stmt.Close()
+		_, err = stmt.Exec(result.CharacterID, user.ID)
+		if err != nil {
+			fmt.Println(err)
+			return err
+		}
+	}
+	return nil
+
 }
 
 func EmitCharacters(times int, db *sql.DB) (gacha_draw_result GachaDrawRequest, err error) {
@@ -34,7 +58,6 @@ func EmitCharacters(times int, db *sql.DB) (gacha_draw_result GachaDrawRequest, 
 		}
 
 		gacha_result.Name, err = GetCharacterName(gacha_result.CharacterID, db)
-
 		gacha_draw_result.Results = append(gacha_draw_result.Results, gacha_result)
 	}
 	return gacha_draw_result, nil

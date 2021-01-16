@@ -13,7 +13,7 @@ import (
 )
 
 func AuthUser(token string, db *sql.DB) (user model.User, err error) {
-	err = db.QueryRow("SELECT name FROM users WHERE token = ?", token).Scan(&user.Name)
+	err = db.QueryRow("SELECT id, name FROM users WHERE token = ?", token).Scan(&user.ID, &user.Name)
 	switch {
 	case err == sql.ErrNoRows:
 		fmt.Println("レコードが存在しません")
