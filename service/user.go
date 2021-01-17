@@ -19,7 +19,6 @@ func AuthUser(token string, db *sql.DB) (user model.User, err error) {
 		fmt.Println("レコードが存在しません")
 		return user, err
 	case err != nil:
-		panic(err.Error())
 		return user, err
 	default:
 		fmt.Println(user.Name)
