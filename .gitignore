@@ -2,3 +2,4 @@ pkg/*
 bin/*
 __debug_bin/*
 delve
+src/github.com/go-delve/delve
