@@ -22,13 +22,14 @@ func (a *App) Initialize() {
 	if a.port == "" {
 		a.port = defaultPort
 	}
-	db, err := db.ConnectDB()
+	var mysql *db.Mysql
+	mysql, err := db.ConnectDB()
 	if err != nil {
 		fmt.Println("error")
 	}
-	defer db.Close()
-	a.router = SetUpRouting(db)
-	checkDBHealth(db)
+	defer mysql.DB.Close()
+	a.router = SetUpRouting(mysql)
+	checkDBHealth(mysql.DB)
 	http.ListenAndServe(":"+a.port, a.router)
 
 }

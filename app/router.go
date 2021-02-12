@@ -1,9 +1,9 @@
 package app
 
 import (
-	"database/sql"
 	"net/http"
 
+	"../db"
 	"../handler"
 	"github.com/gorilla/mux"
 )
@@ -14,10 +14,10 @@ type route struct {
 	handlerFunc http.HandlerFunc
 }
 
-func SetUpRouting(db *sql.DB) *mux.Router {
+func SetUpRouting(mysql *db.Mysql) *mux.Router {
 
 	UserHandler := &handler.UserHandler{
-		DB: db,
+		Mysql: mysql,
 	}
 
 	routes := []route{

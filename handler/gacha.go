@@ -16,7 +16,7 @@ type DrawResponse struct {
 }
 
 func (handler *UserHandler) GachaDraw(w http.ResponseWriter, r *http.Request) {
-	user, err := service.AuthUser(r.Header.Get("x-token"), handler.DB)
+	user, err := service.AuthUser(r.Header.Get("x-token"), handler.Mysql.DB)
 	if err != nil {
 		return
 	}
@@ -33,7 +33,7 @@ func (handler *UserHandler) GachaDraw(w http.ResponseWriter, r *http.Request) {
 	}
 	fmt.Println(draw_response.Times)
 
-	gacha_draw_results, err := service.GachaPlay(user, draw_response.Times, handler.DB)
+	gacha_draw_results, err := service.GachaPlay(user, draw_response.Times, handler.Mysql.DB)
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -45,11 +45,11 @@ func (handler *UserHandler) GachaDraw(w http.ResponseWriter, r *http.Request) {
 }
 
 func (handler *UserHandler) GetUserCharacterAll(w http.ResponseWriter, r *http.Request) {
-	user, err := service.AuthUser(r.Header.Get("x-token"), handler.DB)
+	user, err := service.AuthUser(r.Header.Get("x-token"), handler.Mysql.DB)
 	if err != nil {
 		return
 	}
-	list_user_character, err := service.GetUserCharacters(user.ID, handler.DB)
+	list_user_character, err := service.GetUserCharacters(user.ID, handler.Mysql.DB)
 	if err != nil {
 		fmt.Println(err)
 		return

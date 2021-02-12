@@ -1,7 +1,6 @@
 package handler // 独自のクエリパッケージ
 
 import (
-	"database/sql"
 	"fmt"
 	"net/http"
 
@@ -15,7 +14,7 @@ import (
 // マスタからSELECTしたデータをマッピングする構造体
 
 type UserHandler struct {
-	DB *sql.DB
+	Mysql *db.Mysql
 }
 
 func (handler *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
@@ -31,7 +30,7 @@ func (handler *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	stmt, err := handler.DB.Prepare("INSERT INTO users(name, token, created_at, updated_at) VALUES(?, ?, now(), now())")
+	stmt, err := handler.Mysql.DB.Prepare("INSERT INTO users(name, token, created_at, updated_at) VALUES(?, ?, now(), now())")
 	if err != nil {
 		return
 	}
@@ -47,25 +46,27 @@ func (handler *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func (handler *UserHandler) GetUser(w http.ResponseWriter, r *http.Request) {
-	ctx := db.SetRepository(r.Context(), handler.postgres)
+	ctx := db.SetRepository(r.Context(), handler.Mysql)
 	user, err := usecase.Get(ctx, r.Header.Get("x-token"))
-	// user, err := service.AuthUser(r.Header.Get("x-token"), handler.DB)
 	if err != nil {
 		return
 	}
-	fmt.Println(user.Name)
 	service.RespondJSON(w, 200, user)
 	return
 }
 
 func (handler *UserHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
+	ctx := db.SetRepository(r.Context(), handler.Mysql)
 
-	name, err := service.GainUserName(r)
+	var user schema.User
+	user.Name, err := service.GainUserName(r)
 	if err != nil {
 		return
 	}
+	user.Token = r.Header.Get("x-token")
+	user, err = usecase.Update(ctx, &user)
 
-	stmt, err := handler.DB.Prepare("UPDATE users SET name=? WHERE token=?")
+	stmt, err := handler.Mysql.DB.Prepare("UPDATE users SET name=? WHERE token=?")
 	if err != nil {
 		return
 	}
