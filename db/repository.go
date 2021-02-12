@@ -11,7 +11,7 @@ const keyRepository = "Repository"
 type Repository interface {
 	Close() error
 	Get(token string) (schema.User, error)
-	Insert(User *schema.User) (int, error)
+	Insert(User *schema.User) error
 	Update(user *schema.User) (schema.User, error)
 	GetAll() ([]schema.User, error)
 }
@@ -28,7 +28,7 @@ func Get(ctx context.Context, token string) (schema.User, error) {
 	return getRepository(ctx).Get(token)
 }
 
-func Insert(ctx context.Context, User *schema.User) (int, error) {
+func Insert(ctx context.Context, User *schema.User) error {
 	return getRepository(ctx).Insert(User)
 }
 

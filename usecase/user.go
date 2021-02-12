@@ -15,7 +15,7 @@ func Get(ctx context.Context, token string) (schema.User, error) {
 	return db.Get(ctx, token)
 }
 
-func Insert(ctx context.Context, User *schema.User) (int, error) {
+func Insert(ctx context.Context, User *schema.User) error {
 	return db.Insert(ctx, User)
 }
 

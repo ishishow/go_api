@@ -1,7 +1,6 @@
 package handler // 独自のクエリパッケージ
 
 import (
-	"fmt"
 	"net/http"
 
 	"../db"
@@ -18,6 +17,7 @@ type UserHandler struct {
 }
 
 func (handler *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
+	ctx := db.SetRepository(r.Context(), handler.Mysql)
 	var user schema.User
 	var err error
 	user.Name, err = service.GainUserName(r)
@@ -30,18 +30,10 @@ func (handler *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	stmt, err := handler.Mysql.DB.Prepare("INSERT INTO users(name, token, created_at, updated_at) VALUES(?, ?, now(), now())")
-	if err != nil {
+	if err = usecase.Insert(ctx, &user); err != nil {
 		return
 	}
-	defer stmt.Close()
-
-	//クエリ実行
-	_, err = stmt.Exec(user.Name, user.Token)
-	if err != nil {
-		return
-	}
-
+	service.RespondJSON(w, 200, user.Token)
 	return
 }
 
@@ -59,23 +51,14 @@ func (handler *UserHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 	ctx := db.SetRepository(r.Context(), handler.Mysql)
 
 	var user schema.User
-	user.Name, err := service.GainUserName(r)
+	var err error
+	user.Name, err = service.GainUserName(r)
 	if err != nil {
 		return
 	}
 	user.Token = r.Header.Get("x-token")
 	user, err = usecase.Update(ctx, &user)
 
-	stmt, err := handler.Mysql.DB.Prepare("UPDATE users SET name=? WHERE token=?")
-	if err != nil {
-		return
-	}
-
-	_, err = stmt.Exec(name, r.Header.Get("x-token"))
-	if err != nil {
-		return
-	}
-
-	fmt.Println(name)
+	service.RespondJSON(w, 200, user)
 	return
 }
