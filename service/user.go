@@ -8,11 +8,11 @@ import (
 	"io"
 	"net/http"
 
-	"../model"
+	"../schema"
 	_ "github.com/go-sql-driver/mysql"
 )
 
-func AuthUser(token string, db *sql.DB) (user model.User, err error) {
+func AuthUser(token string, db *sql.DB) (user schema.User, err error) {
 	err = db.QueryRow("SELECT id, name FROM users WHERE token = ?", token).Scan(&user.ID, &user.Name)
 	switch {
 	case err == sql.ErrNoRows:
@@ -27,7 +27,7 @@ func AuthUser(token string, db *sql.DB) (user model.User, err error) {
 }
 
 func GainUserName(r *http.Request) (name string, err error) {
-	var user model.User
+	var user schema.User
 	body := r.Body
 	defer body.Close()
 	buf := new(bytes.Buffer)

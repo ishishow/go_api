@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 
-	"../model"
+	"../schema"
 )
 
 type ListUserCharacterResponse struct {
@@ -18,7 +18,7 @@ type UserCharacterResponse struct {
 }
 
 func GetCharacterName(character_id int, db *sql.DB) (name string, err error) {
-	var character model.Chatacter
+	var character schema.Chatacter
 	err = db.QueryRow("SELECT name FROM characters WHERE id = ?", character_id).Scan(&character.Name)
 	switch {
 	case err == sql.ErrNoRows:

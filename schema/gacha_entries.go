@@ -1,4 +1,4 @@
-package model
+package schema
 
 type GachaEntries struct {
 	ID          int    `db:"ID"`           //ID

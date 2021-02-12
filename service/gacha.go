@@ -6,11 +6,11 @@ import (
 	"math/rand"
 	"time"
 
-	"../model"
+	"../schema"
 	_ "github.com/go-sql-driver/mysql"
 )
 
-func GachaPlay(user model.User, times int, db *sql.DB) (gacha_draw_result GachaDrawRequest, err error) {
+func GachaPlay(user schema.User, times int, db *sql.DB) (gacha_draw_result GachaDrawRequest, err error) {
 
 	gacha_draw_result, err = EmitCharacters(times, db)
 	if err != nil {
@@ -24,7 +24,7 @@ func GachaPlay(user model.User, times int, db *sql.DB) (gacha_draw_result GachaD
 	return gacha_draw_result, nil
 }
 
-func SaveUserCharacter(user model.User, gacha_draw_result GachaDrawRequest, db *sql.DB) (err error) {
+func SaveUserCharacter(user schema.User, gacha_draw_result GachaDrawRequest, db *sql.DB) (err error) {
 
 	for _, result := range gacha_draw_result.Results {
 
@@ -63,7 +63,7 @@ func EmitCharacters(times int, db *sql.DB) (gacha_draw_result GachaDrawRequest, 
 	return gacha_draw_result, nil
 }
 
-func EmitCharacter(entries []model.GachaEntries, sumWeight int) (emitCharacterID int, err error) {
+func EmitCharacter(entries []schema.GachaEntries, sumWeight int) (emitCharacterID int, err error) {
 	my_rand := rand.New(rand.NewSource(1))
 	my_rand.Seed(time.Now().UnixNano())
 	emitVal := my_rand.Intn(sumWeight)
@@ -82,7 +82,7 @@ func EmitCharacter(entries []model.GachaEntries, sumWeight int) (emitCharacterID
 	return 0, err
 }
 
-func SumWeight(db *sql.DB) (total_entries []model.GachaEntries, sumWeight int, err error) {
+func SumWeight(db *sql.DB) (total_entries []schema.GachaEntries, sumWeight int, err error) {
 	sumWeight = 0
 
 	rows, err := db.Query("SELECT id, weight, character_id FROM gacha_entries WHERE gacha_id = ?", 1)
@@ -91,7 +91,7 @@ func SumWeight(db *sql.DB) (total_entries []model.GachaEntries, sumWeight int, e
 	}
 
 	for rows.Next() {
-		entry := model.GachaEntries{}
+		entry := schema.GachaEntries{}
 		err = rows.Scan(&entry.ID, &entry.Weight, &entry.CharacterID)
 		if err != nil {
 			return total_entries, sumWeight, err

@@ -1,48 +1,46 @@
 package app
 
 import (
+	"database/sql"
 	"fmt"
 	"net/http"
+	"os"
 
-	"../db"      //実装した設定パッケージの読み込み
-	"../handler" //実装したクエリパッケージの読み込み
+	"../db"
+	"github.com/gorilla/mux"
 )
 
-func a() {
+type App struct {
+	router *mux.Router
+	port   string
+}
 
+const defaultPort = "8080"
+
+func (a *App) Initialize() {
+	a.port = os.Getenv("PORT")
+	if a.port == "" {
+		a.port = defaultPort
+	}
 	db, err := db.ConnectDB()
 	if err != nil {
 		fmt.Println("error")
 	}
-
 	defer db.Close()
+	a.router = SetUpRouting(db)
+	checkDBHealth(db)
+	http.ListenAndServe(":"+a.port, a.router)
 
-	err = db.Ping()
-	if err != nil {
+}
+
+func checkDBHealth(targetDB *sql.DB) {
+	if err := targetDB.Ping(); err != nil {
 		fmt.Println("データベース接続失敗")
 	} else {
 		fmt.Println("データベース接続成功")
 	}
-
-	http.HandleFunc("/user/create", func(w http.ResponseWriter, r *http.Request) {
-		handler.CreateUser(w, r, db)
-	})
-
-	http.HandleFunc("/user/get", func(w http.ResponseWriter, r *http.Request) {
-		handler.GetUser(w, r, db)
-	})
-
-	http.HandleFunc("/user/update", func(w http.ResponseWriter, r *http.Request) {
-		handler.UpdateUser(w, r, db)
-	})
-
-	http.HandleFunc("/user/update", func(w http.ResponseWriter, r *http.Request) {
-		handler.UpdateUser(w, r, db)
-	})
-
-	http.HandleFunc("/user/update", func(w http.ResponseWriter, r *http.Request) {
-		handler.UpdateUser(w, r, db)
-	})
-
-	http.ListenAndServe(":8080", nil)
 }
+
+// func (a *App) Run() {
+// 	http.ListenAndServe(":"+a.port, a.router)
+// }

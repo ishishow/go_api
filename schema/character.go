@@ -1,10 +1,9 @@
-package model
+package schema
 
-// User is
-type User struct {
+type Chatacter struct {
 	ID      int    `db:"ID"`         //ID
 	Name    string `db:"name"`       //ID
-	Token   string `db:"token"`      //ID
+	Rarity  int    `db:"rarity"`     //ID
 	Created string `db:"created_at"` //ID
 	Updated string `db:"updated_at"` //ID
 }

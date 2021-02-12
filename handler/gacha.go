@@ -2,7 +2,6 @@ package handler
 
 import (
 	"bytes"
-	"database/sql"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -12,15 +11,14 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
-// マスタからSELECTしたデータをマッピングする構造体
 type DrawResponse struct {
 	Times int `json:"times"`
 }
 
-func GachaDraw(w http.ResponseWriter, r *http.Request, db *sql.DB) {
+func (handler *UserHandler) GachaDraw(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "POST":
-		user, err := service.AuthUser(r.Header.Get("x-token"), db)
+		user, err := service.AuthUser(r.Header.Get("x-token"), handler.DB)
 		if err != nil {
 			return
 		}
@@ -31,14 +29,13 @@ func GachaDraw(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 		buf := new(bytes.Buffer)
 		io.Copy(buf, body)
 
-		// byte配列にしたbody内のjsonをgoで扱えるようにobjectに変換
 		err = json.Unmarshal(buf.Bytes(), &draw_response)
 		if err != nil {
 			fmt.Println(err)
 		}
 		fmt.Println(draw_response.Times)
 
-		gacha_draw_results, err := service.GachaPlay(user, draw_response.Times, db)
+		gacha_draw_results, err := service.GachaPlay(user, draw_response.Times, handler.DB)
 		if err != nil {
 			fmt.Println(err)
 			return
@@ -49,14 +46,14 @@ func GachaDraw(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	return
 }
 
-func GetUserCharacterAll(w http.ResponseWriter, r *http.Request, db *sql.DB) {
+func (handler *UserHandler) GetUserCharacterAll(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "GET":
-		user, err := service.AuthUser(r.Header.Get("x-token"), db)
+		user, err := service.AuthUser(r.Header.Get("x-token"), handler.DB)
 		if err != nil {
 			return
 		}
-		list_user_character, err := service.GetUserCharacters(user.ID, db)
+		list_user_character, err := service.GetUserCharacters(user.ID, handler.DB)
 		if err != nil {
 			fmt.Println(err)
 			return

@@ -5,47 +5,51 @@ import (
 	"fmt"
 	"net/http"
 
-	"../model"
+	"../schema"
 	"../service"
 	_ "github.com/go-sql-driver/mysql"
 )
 
 // マスタからSELECTしたデータをマッピングする構造体
 
-func CreateUser(w http.ResponseWriter, r *http.Request, db *sql.DB) (id int64, err error) {
+type UserHandler struct {
+	DB *sql.DB
+}
+
+func (handler *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "POST":
-		var user model.User
-
+		var user schema.User
+		var err error
 		user.Name, err = service.GainUserName(r)
 		if err != nil {
-			return 0, err
+			return
 		}
 
 		user.Token, err = service.CreateUuid()
 		if err != nil {
-			return 0, err
+			return
 		}
 
-		stmt, err := db.Prepare("INSERT INTO users(name, token, created_at, updated_at) VALUES(?, ?, now(), now())")
+		stmt, err := handler.DB.Prepare("INSERT INTO users(name, token, created_at, updated_at) VALUES(?, ?, now(), now())")
 		if err != nil {
-			return 0, err
+			return
 		}
 		defer stmt.Close()
 
 		//クエリ実行
 		_, err = stmt.Exec(user.Name, user.Token)
 		if err != nil {
-			return 0, err
+			return
 		}
 	}
-	return 0, nil
+	return
 }
 
-func GetUser(w http.ResponseWriter, r *http.Request, db *sql.DB) {
+func (handler *UserHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "GET":
-		user, err := service.AuthUser(r.Header.Get("x-token"), db)
+		user, err := service.AuthUser(r.Header.Get("x-token"), handler.DB)
 		if err != nil {
 			return
 		}
@@ -55,7 +59,7 @@ func GetUser(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	return
 }
 
-func UpdateUser(w http.ResponseWriter, r *http.Request, db *sql.DB) {
+func (handler *UserHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 	// プリペアードステートメント
 	switch r.Method {
 	case "PUT":
@@ -65,7 +69,7 @@ func UpdateUser(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 			return
 		}
 
-		stmt, err := db.Prepare("UPDATE users SET name=? WHERE token=?")
+		stmt, err := handler.DB.Prepare("UPDATE users SET name=? WHERE token=?")
 		if err != nil {
 			return
 		}
