@@ -33,12 +33,8 @@ func GainUserName(r *http.Request) (name string, err error) {
 	buf := new(bytes.Buffer)
 	io.Copy(buf, body)
 
-	// byte配列にしたbody内のjsonをgoで扱えるようにobjectに変換
-	err = json.Unmarshal(buf.Bytes(), &user)
-	if err != nil {
-		fmt.Println("error 1")
+	if err := json.Unmarshal(buf.Bytes(), &user); err != nil {
 		return "", err
 	}
-	fmt.Println(user.Name)
 	return user.Name, nil
 }
