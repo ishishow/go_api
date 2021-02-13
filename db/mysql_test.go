@@ -4,6 +4,7 @@ import (
 	"testing"
 	"time"
 
+	"../schema"
 	"../service"
 	"github.com/DATA-DOG/go-sqlmock"
 )
@@ -27,6 +28,35 @@ func TestSQLMock_Get(t *testing.T) {
 		WillReturnRows(sqlmock.NewRows(columns).AddRow(1, "ishishow", token, time.Now(), time.Now()))
 
 	if _, err := mysqlMock.Get(token); err != nil {
+		t.Fatalf("failed to get user: %s", err)
+	}
+
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Fatalf("failed to ExpectationWereMet(): %s", err)
+	}
+}
+
+func TestSQLMock_Insert(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("failed to init db mock")
+	}
+	defer db.Close()
+	mysqlMock := &Mysql{db}
+
+	token, err := service.CreateUuid()
+	if err != nil {
+		t.Fatalf("uuid error")
+	}
+
+	user := &schema.User{Name: "ishishow", Token: token}
+	mock.ExpectBegin()
+	mock.ExpectExec(`INSERT INTO users`).
+		WithArgs("ishishow", token).
+		WillReturnResult(sqlmock.NewResult(1, 1))
+	mock.ExpectCommit()
+
+	if err := mysqlMock.Insert(user); err != nil {
 		t.Fatalf("failed to get user: %s", err)
 	}
 
