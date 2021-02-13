@@ -2,5 +2,5 @@ pkg/*
 bin/*
 __debug_bin/*
 src/*
-pkg
-bin
+.vscode/*
+.devcontainer/*
