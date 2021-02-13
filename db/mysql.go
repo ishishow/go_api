@@ -51,12 +51,20 @@ func (m *Mysql) Insert(user *schema.User) error {
 
 func (m *Mysql) Update(user *schema.User) (schema.User, error) {
 	query := `UPDATE users SET name=? WHERE token=?;`
-	stmt, err := m.DB.Prepare(query)
+	tx, err := m.DB.Begin()
 	if err != nil {
 		return *user, err
 	}
+	defer func() {
+		switch err {
+		case nil:
+			err = tx.Commit()
+		default:
+			tx.Rollback()
+		}
+	}()
 
-	if _, err = stmt.Exec(user.Name, user.Token); err != nil {
+	if _, err = tx.Exec(query, user.Name, user.Token); err != nil {
 		return *user, err
 	}
 	return *user, nil

@@ -57,7 +57,7 @@ func TestSQLMock_Insert(t *testing.T) {
 	mock.ExpectCommit()
 
 	if err := mysqlMock.Insert(user); err != nil {
-		t.Fatalf("failed to get user: %s", err)
+		t.Fatalf("failed to insert user: %s", err)
 	}
 
 	if err := mock.ExpectationsWereMet(); err != nil {
@@ -65,56 +65,31 @@ func TestSQLMock_Insert(t *testing.T) {
 	}
 }
 
-// func TestMysql_Insert(t *testing.T) {
-// 	mysql := &Mysql{testdb.Setup()}
-// 	defer mysql.Close()s
+func TestSQLMock_Update(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("failed to init db mock")
+	}
+	defer db.Close()
+	mysqlMock := &Mysql{db}
 
-// 	user := &schema.User{
-// 		ID:      nil,
-// 		Name:    "ishishow",
-// 		Token:   "uuuuid",
-// 		Created: nil,
-// 		Updated: nil,
-// 	}
+	token, err := service.CreateUuid()
+	if err != nil {
+		t.Fatalf("uuid error")
+	}
 
-// 	err := Mysql.Insert(user)
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// }
+	user := &schema.User{Name: "ishishow", Token: token}
+	mock.ExpectBegin()
+	mock.ExpectExec(`UPDATE users`).
+		WithArgs("ishishow", token).
+		WillReturnResult(sqlmock.NewResult(1, 1))
+	mock.ExpectCommit()
 
-// func TestMysql_Get(t *testing.T) {
-// 	Mysql := &Mysql{testdb.Setup()}
-// 	defer Mysql.Close()
+	if _, err := mysqlMock.Update(user); err != nil {
+		t.Fatalf("failed to update user: %s", err)
+	}
 
-// 	token, err := service.CreateUuid()
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-
-// 	wantUser := &schema.User{
-// 		ID:      nil,
-// 		Name:    "ishishow",
-// 		Token:   token,
-// 		Created: nil,
-// 		Updated: nil,
-// 	}
-
-// 	id, err := Mysql.Insert(wantUser)
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-
-// 	gotUser, err = Mysql.Get(token)
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-
-// 	if equal(gotUser.Name, wantUser.Name) {
-// 		t.Fatal("This is wrong user!")
-// 	}
-// }
-
-// func equal(got interface{}, want interface{}) bool {
-// 	return reflect.DeepEqual(got, want)
-// }
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Fatalf("failed to ExpectationWereMet(): %s", err)
+	}
+}
