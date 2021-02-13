@@ -1,8 +1,6 @@
 pkg/*
 bin/*
 __debug_bin/*
-delve
-src/github.com/go-delve/delve
-src/github.com/go-delve/delve
-src/github.com/DATA-DOG/go-sqlmock
-src/github.com/go-delve/delve
+src/*
+pkg
+bin
