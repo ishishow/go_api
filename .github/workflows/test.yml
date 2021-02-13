@@ -8,15 +8,11 @@ jobs:
         os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
     steps:
-    - name: Install Go
-      uses: actions/setup-go@v2
-      with:
-        go-version: ${{ matrix.go-version }}
-    - name: Checkout code
-      uses: actions/checkout@v2
-    - name: Test
-      run: go get "github.com/go-sql-driver/mysql"
-      run: go get "github.com/google/uuid"
-      run: go get "github.com/gorilla/mux"
-      run: go get "github.com/DATA-DOG/go-sqlmock"
-      run: go test ./db
+      - name: Install Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: ${{ matrix.go-version }}
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Test
+        run: go get "github.com/go-sql-driver/mysql" && go get "github.com/google/uuid" && go get "github.com/gorilla/mux" && go get "github.com/DATA-DOG/go-sqlmock" && go test ./db
