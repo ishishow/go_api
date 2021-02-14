@@ -16,9 +16,7 @@ func GachaPlay(user schema.User, times int, db *sql.DB) (gacha_draw_result Gacha
 	if err != nil {
 		return gacha_draw_result, err
 	}
-	err = SaveUserCharacter(user, gacha_draw_result, db)
-	if err != nil {
-		fmt.Println(err)
+	if err := SaveUserCharacter(user, gacha_draw_result, db); err != nil {
 		return gacha_draw_result, err
 	}
 	return gacha_draw_result, nil

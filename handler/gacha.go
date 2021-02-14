@@ -8,32 +8,37 @@ import (
 	"net/http"
 
 	"../service"
+	"../db"
+	"../usecase"
 	_ "github.com/go-sql-driver/mysql"
 )
 
-type DrawResponse struct {
+type DrawRequest struct {
 	Times int `json:"times"`
 }
 
 func (handler *UserHandler) GachaDraw(w http.ResponseWriter, r *http.Request) {
-	user, err := service.AuthUser(r.Header.Get("x-token"), handler.Mysql.DB)
+	ctx := db.SetRepository(r.Context(), handler.Mysql)
+	user, err := usecase.Get(ctx, r.Header.Get("x-token"))
 	if err != nil {
+		service.RespondJSON(w, 500, err)
 		return
 	}
 
-	var draw_response DrawResponse
+
+	var draw_request DrawRequest
 	body := r.Body
 	defer body.Close()
 	buf := new(bytes.Buffer)
 	io.Copy(buf, body)
-
-	err = json.Unmarshal(buf.Bytes(), &draw_response)
-	if err != nil {
-		fmt.Println(err)
+	if err := json.Unmarshal(buf.Bytes(), &draw_request); err != nil {
+		service.RespondJSON(w, 500, err)
+		return
 	}
-	fmt.Println(draw_response.Times)
+	fmt.Println(draw_request.Times)
 
-	gacha_draw_results, err := service.GachaPlay(user, draw_response.Times, handler.Mysql.DB)
+
+	gacha_draw_results, err := usecase.PlayGacha(ctx, user.ID, draw_request.Times)
 	if err != nil {
 		fmt.Println(err)
 		return

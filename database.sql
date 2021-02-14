@@ -1,4 +1,4 @@
-mysql> create table `users` (
+create table `users` (
 `id` int NOT NULL AUTO_INCREMENT PRIMARY KEY COMMENT "ID",
 `name` VARCHAR(100) NOT NULL COMMENT "user-name",
 `token` VARCHAR(100) NOT NULL COMMENT "Token",

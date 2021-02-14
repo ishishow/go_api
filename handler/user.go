@@ -2,6 +2,7 @@ package handler // 独自のクエリパッケージ
 
 import (
 	"net/http"
+	// "fmt"
 
 	"../db"
 	"../schema"
@@ -22,15 +23,18 @@ func (handler *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	var err error
 	user.Name, err = service.GainUserName(r)
 	if err != nil {
+		service.RespondJSON(w, 500, err)
 		return
 	}
 
 	user.Token, err = service.CreateUuid()
 	if err != nil {
+		service.RespondJSON(w, 500, err)
 		return
 	}
 
 	if err = usecase.Insert(ctx, &user); err != nil {
+		service.RespondJSON(w, 500, err)
 		return
 	}
 	service.RespondJSON(w, 200, user.Token)
@@ -41,6 +45,7 @@ func (handler *UserHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 	ctx := db.SetRepository(r.Context(), handler.Mysql)
 	user, err := usecase.Get(ctx, r.Header.Get("x-token"))
 	if err != nil {
+		service.RespondJSON(w, 500, err)
 		return
 	}
 	service.RespondJSON(w, 200, user)
@@ -54,6 +59,7 @@ func (handler *UserHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 	var err error
 	user.Name, err = service.GainUserName(r)
 	if err != nil {
+		service.RespondJSON(w, 500, err)
 		return
 	}
 	user.Token = r.Header.Get("x-token")

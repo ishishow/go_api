@@ -23,6 +23,4 @@ func Update(ctx context.Context, user *schema.User) (schema.User, error) {
 	return db.Update(ctx, user)
 }
 
-func GetAll(ctx context.Context) ([]schema.User, error) {
-	return db.GetAll(ctx)
-}
+

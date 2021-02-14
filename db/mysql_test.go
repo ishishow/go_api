@@ -23,7 +23,7 @@ func TestSQLMock_Get(t *testing.T) {
 	}
 
 	columns := []string{"id", "token", "name", "created_at", "updated_at"}
-	mock.ExpectQuery("SELECT (.+) FROM USERS WHERE token =").
+	mock.ExpectQuery("SELECT (.+) FROM users WHERE token =").
 		WithArgs(token).
 		WillReturnRows(sqlmock.NewRows(columns).AddRow(1, "ishishow", token, time.Now(), time.Now()))
 
